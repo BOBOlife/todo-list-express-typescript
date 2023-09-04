@@ -5,18 +5,21 @@ import dayjs from 'dayjs'
 import bodyParser from 'body-parser'// 对post请求的请求体进行解析
 import { utils } from './src/utils'
 import jwt from 'jsonwebtoken'// 使用jwt签名
+import path from 'path'
+import logger from 'morgan'
 
 const app = express()
 
 app.set('superSecret', 'todolist'); // 设置 app 的密码--用来生成签名的密码
-
+app.use(logger('dev'));
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 
 app.use(bodyParser.json())
+app.use(express.static(path.join(__dirname, 'public')));
 
-let sendError = (res:any, message: string, code = 500) => {
+let sendError = (res: any, message: string, code = 500) => {
   res.status(500).send({
     code: code,
     message: message
@@ -69,7 +72,7 @@ io.on('connection', function (socket: { on: (arg0: string, arg1: (params: any) =
 /**
  * 用户登录
  */
-app.post('/user/login', (req:any, res) => {
+app.post('/user/login', (req: any, res) => {
   const params = req.body;
   console.log(params)
   if (!params.username) {
@@ -85,7 +88,7 @@ app.post('/user/login', (req:any, res) => {
   let cliendIp = utils.getClientIp(req)
   let csql = eval('`' + sql.USER_LOGIN + '`');
   console.log('[SQL:]', csql);
-  query(csql, (err, result:any, fields) => {
+  query(csql, (err, result: any, fields) => {
     if (err) {
       console.log('[SELECT ERROR]:', err.message)
       return sendError(res, err.message)
@@ -113,7 +116,7 @@ app.post('/user/login', (req:any, res) => {
 /**
  * 用户注册
  */
-app.post('/user/register', (req:any, res) => {
+app.post('/user/register', (req: any, res) => {
   const params = req.body;
   console.log(params)
   if (!params.username) {
